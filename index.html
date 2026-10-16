@@ -251,8 +251,8 @@ camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
 renderer.setSize(innerWidth,innerHeight);
 });
 </script>
-<script>document.getElementById("slideBtn").onclick=startSlide;
-document.getElementById("openChars").onclick=()=>{document.getElementById("chars").style.display="block";document.getElementById("shop").style.display="none"};document.getElementById("openShop").onclick=()=>{document.getElementById("shop").style.display="block";document.getElementById("chars").style.display="none"};document.querySelectorAll("[data-skin]").forEach(b=>b.onclick=()=>document.getElementById("msg").textContent="اخترت "+b.textContent+" ✨");</script>
+<script>document.addEventListener("DOMContentLoaded",()=>{document.getElementById("slideBtn").onclick=startSlide;
+document.getElementById("openChars").onclick=()=>{document.getElementById("chars").style.display="block";document.getElementById("shop").style.display="none"};document.getElementById("openShop").onclick=()=>{document.getElementById("shop").style.display="block";document.getElementById("chars").style.display="none"};document.querySelectorAll("[data-skin]").forEach(b=>b.onclick=()=>document.getElementById("msg").textContent="اخترت "+b.textContent+" ✨");});</script>
 
 <style>
 #musicBtn{position:fixed;right:12px;bottom:55px;z-index:99;background:#00d9ff;color:#06101b;padding:12px;border:0;border-radius:12px;font-weight:bold}
