@@ -9,7 +9,7 @@
 body{margin:0;overflow:hidden;background:#050615;color:white;font-family:Arial,sans-serif}
 canvas{display:block}
 #hud{position:fixed;top:18px;left:0;right:0;display:flex;justify-content:space-around;z-index:2;font-weight:bold;text-shadow:0 0 12px #00eaff}
-#menu{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#05061599;text-align:center;z-index:3}
+#menu{position:fixed;inset:0;display:flex;align-items:flex-start;justify-content:center;padding:12px 10px;box-sizing:border-box;background:linear-gradient(to bottom,#050615bb,transparent 55%);text-align:center;z-index:3;pointer-events:none}#menu .card{pointer-events:auto;transform:scale(.82);transform-origin:top center;max-height:48vh;overflow-y:auto;background:#050615bb;border:1px solid #00dfff88;border-radius:18px;padding:10px 18px;box-sizing:border-box}#menu h1{font-size:24px;margin:5px}#menu p{margin:6px}#menu button{margin:3px}
 .card{padding:25px;background:#10152be8;border:1px solid #00eaff;border-radius:20px;box-shadow:0 0 30px #00d9ff55;width:85%;max-width:340px}
 h1{color:#00eaff;text-shadow:0 0 20px #00eaff}
 button{border:0;border-radius:12px;background:#00d9ff;color:#03101b;padding:14px 24px;font-size:18px;font-weight:bold}
@@ -115,6 +115,45 @@ const neonPoles = [];
 }
 
 
+
+// SHADOWRUN_BMW: سيارة مستقبلية سوداء لمشهد البداية
+const bmwIntro = new THREE.Group();
+const carBodyMat = new THREE.MeshStandardMaterial({
+ color:0x080b12, metalness:0.9, roughness:0.22
+});
+const carGlassMat = new THREE.MeshStandardMaterial({
+ color:0x10283c, metalness:0.65, roughness:0.16,
+ emissive:0x001c32
+});
+const carGlowMat = new THREE.MeshStandardMaterial({
+ color:0x00dfff, emissive:0x00aaff, emissiveIntensity:2
+});
+function introBox(w,h,d,material,x,y,z){
+ const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);
+ mesh.position.set(x,y,z);
+ mesh.castShadow=true;
+ mesh.receiveShadow=true;
+ bmwIntro.add(mesh);
+ return mesh;
+}
+introBox(2.05,.48,4.15,carBodyMat,0,.62,-2.5);
+introBox(1.55,.48,1.8,carGlassMat,0,1.03,-2.55);
+introBox(1.78,.12,1.1,carBodyMat,0,.83,-.48);
+introBox(.48,.1,.06,carGlowMat,-.63,.67,-.39);
+introBox(.48,.1,.06,carGlowMat,.63,.67,-.39);
+const wheelMat=mat(0x080a10);
+for(const x of [-.96,.96]){
+ for(const z of [-3.7,-1.2]){
+  const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.36,.36,.18,20),wheelMat);
+  wheel.rotation.z=Math.PI/2;
+  wheel.position.set(x,.38,z);
+  bmwIntro.add(wheel);
+ }
+}
+bmwIntro.position.set(-1.8,0,0);
+bmwIntro.visible = false;
+scene.add(bmwIntro);
+
 const player=new THREE.Group();scene.add(player);
 function box(parent,w,h,d,material,x,y,z){
  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);
@@ -176,6 +215,72 @@ for(const side of [-1,1]){
  arms.push(arm);
 }
 player.position.z=0;
+
+// SHADOWRUN_CHARACTER_DETAIL_V1: تفاصيل البدلة المستقبلية
+const armorDetail = mat(0x111a2b,0x061020);
+const silverDetail = mat(0x53677e,0x101a2a);
+const neonDetail = mat(0x00dfff,0x0077aa);
+
+// درع الصدر وخطوط النيون
+box(torso,.34,.23,.065,armorDetail,0,1.36,.19);
+box(torso,.24,.035,.025,neonDetail,0,1.44,.228);
+box(torso,.12,.075,.026,silverDetail,0,1.34,.23);
+box(torso,.08,.025,.02,glow,0,1.34,.25);
+
+// حقيبة تقنية على الظهر
+box(player,.34,.39,.17,armorDetail,0,1.36,-.19);
+box(player,.25,.07,.19,silverDetail,0,1.49,-.20);
+box(player,.22,.035,.025,neonDetail,0,1.49,-.30);
+
+// واقيات الكتفين والساعدين
+for(const side of [-1,1]){
+ sphere(player,.17,.12,.16,armorDetail,side*.35,1.43,0);
+ box(arms[side===-1?0:1],.14,.13,.09,silverDetail,side*.02,-.29,.035);
+ box(arms[side===-1?0:1],.12,.025,.025,neonDetail,side*.02,-.29,.09);
+}
+
+// تفاصيل الركب والأحذية
+for(const leg of legs){
+ box(leg,.15,.11,.07,armorDetail,0,-.29,.055);
+ box(leg,.13,.035,.025,neonDetail,0,-.30,.095);
+ box(leg,.14,.035,.08,silverDetail,0,-.52,.13);
+}
+
+
+// SHADOWRUN_INTRO_ARM_ANIMATION: وضعية الرسم بمشهد البداية
+player.position.set(-0.15,0,-1.15);
+player.rotation.y=-0.45;
+
+// SHADOWRUN_POLICE_CHASE: شرطي بسيط يطارد اللاعب
+const cop = new THREE.Group();
+const copBlue = mat(0x142c67);
+const copBlack = mat(0x111522);
+const copSkin = mat(0xb87955);
+sphere(cop,.27,.34,.17,copBlue,0,1.25,0);
+sphere(cop,.19,.21,.18,copSkin,0,1.72,0);
+sphere(cop,.22,.07,.2,copBlack,0,1.91,0);
+box(cop,.42,.09,.35,copBlack,0,1.96,0);
+box(cop,.1,.07,.04,glow,-.12,1.73,.17);
+box(cop,.1,.07,.04,pink,.12,1.73,.17);
+const copLegs=[];
+const copArms=[];
+for(const side of [-1,1]){
+ const leg=new THREE.Group();
+ leg.position.set(side*.12,.96,0);
+ cop.add(leg);
+ limb(leg,[0,0,0],[0,-.36,0],.09,.065,copBlack);
+ limb(leg,[0,-.36,0],[0,-.62,.04],.065,.05,copBlue);
+ copLegs.push(leg);
+ const arm=new THREE.Group();
+ arm.position.set(side*.29,1.43,0);
+ cop.add(arm);
+ limb(arm,[0,0,0],[side*.04,-.24,.02],.075,.055,copBlue);
+ limb(arm,[side*.04,-.24,.02],[side*.02,-.4,.04],.055,.04,copBlack);
+ copArms.push(arm);
+}
+scene.add(cop);
+cop.visible=false;
+
 const buildings=[];
 for(let i=0;i<48;i++){
 for(const side of [-1,1]){
@@ -245,9 +350,24 @@ lane=0;jump=0;vy=0;score=0;gold=0;elapsed=0;
 player.position.set(0,0,0);
 scoreEl.textContent=0;goldEl.textContent=0;
 }
+// مشهد البداية: عرض السيارة قبل انطلاق الركض
+bmwIntro.visible = true;
+camera.position.set(-2.2, 3.2, 7.5);
+camera.lookAt(-1.8, 0.8, -2.2);
+
 document.getElementById('start').onclick=()=>{
 if(!window.THREE){msg.textContent='تحقق من الإنترنت ثم أعد فتح الصفحة';return}
-reset();running=true;menu.style.display='none';last=performance.now();
+bmwIntro.visible = false;
+reset();
+player.position.set(0,0,0);
+player.rotation.set(0,0,0);
+cop.visible=true;
+cop.position.set(0,0,2.5);
+camera.position.set(0,5.2,9);
+camera.lookAt(0,1,-5);
+running=true;
+menu.style.display='none';
+last=performance.now();
 };
 function move(d){if(running)lane=Math.max(-1,Math.min(1,lane+d))}
 function startSlide(){
@@ -287,9 +407,13 @@ sliding=false;
 player.scale.y=1;
 }
 elapsed+=dt;score=Math.floor(elapsed*10);scoreEl.textContent=score;
-const speed=19+Math.min(elapsed*.25,13);
-if(Math.random()<dt*.65)spawnObstacle();
-if(Math.random()<dt*.95)spawnCoin();
+// صعوبة تدريجية حسب وقت الركض والمسافة
+const difficulty = Math.min(elapsed / 90, 1);
+const speed = 19 + Math.min(elapsed * 0.25, 13);
+const obstacleRate = 0.65 + difficulty * 0.65;
+const coinRate = Math.max(0.55, 0.95 - difficulty * 0.2);
+if(Math.random() < dt * obstacleRate) spawnObstacle();
+if(Math.random() < dt * coinRate) spawnCoin();
 player.position.x+=(lane*2-player.position.x)*Math.min(1,dt*12);
 camera.position.x=player.position.x;
 camera.position.z=player.position.z+9;
@@ -297,10 +421,13 @@ camera.lookAt(player.position.x,1,player.position.z-5);
 if(vy!==0||jump>0){jump+=vy*dt;vy-=19*dt;if(jump<0){jump=0;vy=0}}
 player.position.y=jump;
 player.rotation.z=(lane*2-player.position.x)*-.025;
-legs[0].rotation.x=Math.sin(now*.015)*.6;
-legs[1].rotation.x=-Math.sin(now*.015)*.6;
-arms[0].rotation.x=-Math.sin(now*.015)*.38;
-arms[1].rotation.x=Math.sin(now*.015)*.38;
+const runCycle=now*.015;
+legs[0].rotation.x=Math.sin(runCycle)*.72;
+legs[1].rotation.x=-Math.sin(runCycle)*.72;
+arms[0].rotation.x=-Math.sin(runCycle)*.48;
+arms[1].rotation.x=Math.sin(runCycle)*.48;
+torso.position.y=Math.abs(Math.sin(runCycle*2))*.045;
+torso.rotation.x=.035+Math.sin(runCycle)*.025;
 for(const b of buildings){b.position.z+=speed*dt;if(b.position.z>10)b.position.z-=192}
 for(const p of neonPoles){p.position.z+=speed*dt;if(p.position.z>10)p.position.z-=162}
 for(let i=objects.length-1;i>=0;i--){
@@ -314,6 +441,22 @@ if(!sliding){endGame();break}
 }
 if(o.g.position.z>7){scene.remove(o.g);objects.splice(i,1)}
 }
+} else {
+ // حركة إيد الشخصية كأنها ترسم على السيارة
+ player.position.set(-0.15,0,-1.15);
+ player.rotation.y=-0.45;
+ arms[0].rotation.x=-0.65+Math.sin(now*.009)*.28;
+ arms[0].rotation.z=-0.7+Math.sin(now*.012)*.18;
+ arms[1].rotation.x=.15;
+ cop.visible=false;
+}
+if(running && cop.visible){
+ cop.position.x+=(player.position.x-cop.position.x)*Math.min(1,dt*3);
+ cop.position.z=player.position.z+2.5+Math.sin(now*.008)*.12;
+ for(let i=0;i<2;i++){
+  copLegs[i].rotation.x=Math.sin(now*.015+(i*Math.PI))*.55;
+  copArms[i].rotation.x=-Math.sin(now*.015+(i*Math.PI))*.3;
+ }
 }
 renderer.render(scene,camera);
 }
@@ -347,53 +490,57 @@ document.getElementById("openChars").onclick=()=>{document.getElementById("chars
 </div>
 <script>
 document.getElementById('musicBtn').onclick=()=>document.getElementById('musicPanel').style.display='block';
-async function pickMusic(type){
- const list=document.getElementById('songList');
- list.innerHTML='';
- const artists=type==='iraqi'
- ? ['🇮🇶 سيف نبيل','🇮🇶 رحمة رياض','🇮🇶 ماجد المهندس','🇮🇶 نور الزين']
- : ['🌍 Travis Scott','🌍 Billie Eilish','🌍 Alan Walker','🌍 The Weeknd'];
- const heading=document.createElement('div');
- heading.textContent='الفنانين المفضلين';
- heading.style.cssText='padding:10px;color:#00d9ff;font-weight:bold';
- list.appendChild(heading);
- artists.forEach(name=>{
-  const row=document.createElement('div');
-  row.textContent=name+' — ▶ تشغيل'; row.style.cursor='pointer'; row.onclick=()=>{if(type==='iraqi' && name.includes('سيف نبيل')){const a=document.getElementById('gameAudio');a.src='music/iraqi/test-song.mp3';a.play().catch(()=>alert('تعذر التشغيل'));}else{alert('نحتاج ملف الأغنية الأصلي لهذا الفنان');}};
-  row.style.cssText='padding:10px;margin:6px 0;background:#182440;color:white;border-radius:10px';
-  list.appendChild(row);
- });
- const sep=document.createElement('div');
- sep.textContent='🎵 الملفات الصوتية المتوفرة';
- sep.style.cssText='padding:12px;color:#00d9ff;font-weight:bold';
- list.appendChild(sep);
- try{
-  const res=await fetch('music/'+type+'/');
-  if(!res.ok) throw new Error('folder');
-  const html=await res.text();
-  const files=[...html.matchAll(/href="([^"]+\.(?:mp3|ogg))"/gi)].map(x=>x[1]);
-  if(!files.length){
-   const msg=document.createElement('div');
-   msg.textContent='ماكو ملفات صوتية بهذا القسم بعد';
-   list.appendChild(msg);
-   return;
+let musicPlaylist = [];
+let musicIndex = -1;
+const playlistAudio = document.getElementById('gameAudio');
+
+playlistAudio.addEventListener('ended', async () => {
+  if (!musicPlaylist.length || musicIndex < 0) return;
+
+  musicIndex = (musicIndex + 1) % musicPlaylist.length;
+  playlistAudio.src = musicPlaylist[musicIndex];
+
+  try {
+    await playlistAudio.play();
+  } catch (e) {
+    console.error('تعذر تشغيل الأغنية التالية:', e);
   }
-  files.forEach(file=>{
-   const btn=document.createElement('button');
-   btn.textContent='▶ '+decodeURIComponent(file);
-   btn.style.cssText='display:block;width:100%;margin:7px 0;padding:12px;border-radius:10px;background:#00d9ff;color:#06101b;border:0;font-weight:bold';
-   btn.onclick=()=>{
-    const audio=document.getElementById('gameAudio');
-    audio.src='music/'+type+'/'+file;
-    audio.play().catch(()=>alert('تعذر تشغيل الملف الصوتي'));
-   };
-   list.appendChild(btn);
-  });
- }catch(e){
-  const msg=document.createElement('div');
-  msg.textContent='تعذر تحميل الملفات. افتح اللعبة من السيرفر المحلي.';
-  list.appendChild(msg);
- }
+});
+
+async function pickMusic(type){
+ const list = document.getElementById('songList');
+ list.innerHTML = '';
+
+ const allTracks = [
+  {type:'iraqi', name:'🇮🇶 الأغنية العراقية', path:'music/iraqi/test-song.mp3'},
+  {type:'foreign', name:'🌍 الأغنية الأجنبية 1', path:'music/foreign/foreign-song.mp3'},
+  {type:'foreign', name:'🌍 الأغنية الأجنبية 2', path:'music/foreign/track-3.mp3'},
+  {type:'foreign', name:'🌍 الأغنية الأجنبية 3', path:'music/foreign/track-4.mp3'},
+  {type:'foreign', name:'🌍 الأغنية الأجنبية 4', path:'music/foreign/track-5.mp3'}
+ ];
+
+ const heading = document.createElement('div');
+ heading.textContent = '🎵 اختار الأغنية';
+ heading.style.cssText = 'padding:12px;color:#00d9ff;font-weight:bold';
+ list.appendChild(heading);
+
+ allTracks.filter(track => track.type === type).forEach(track => {
+  const btn = document.createElement('button');
+  btn.textContent = '▶ ' + track.name;
+  btn.style.cssText = 'display:block;width:100%;margin:7px 0;padding:12px;border-radius:10px;background:#00d9ff;color:#06101b;border:0;font-weight:bold';
+
+  btn.onclick = () => {
+   musicPlaylist = allTracks.map(item => item.path);
+   musicIndex = musicPlaylist.indexOf(track.path);
+
+   const audio = document.getElementById('gameAudio');
+   audio.src = track.path;
+   audio.load();
+   audio.play().catch(() => alert('تعذر تشغيل الأغنية، تأكد من وجود الملف'));
+  };
+
+  list.appendChild(btn);
+ });
 }
 function playDirect(){
  const url=document.getElementById('audioURL').value.trim();
