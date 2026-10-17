@@ -499,6 +499,7 @@ playlistAudio.addEventListener('ended', async () => {
 
   musicIndex = (musicIndex + 1) % musicPlaylist.length;
   playlistAudio.src = musicPlaylist[musicIndex];
+  playlistAudio.load();
 
   try {
     await playlistAudio.play();
