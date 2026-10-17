@@ -21,10 +21,18 @@ button{border:0;border-radius:12px;background:#00d9ff;color:#03101b;padding:14px
 <div id="menu"><div class="card"><div style="font-size:42px">🌃</div><h1>SHADOW RUN 3D</h1><p id="msg">مدينة المستقبل تنتظرك يا بطل</p><button id="start">▶ العب الآن</button><p><button id="openChars">🦸 الشخصيات</button> <button id="openShop">🛒 المتجر</button></p><div id="chars" style="display:none"><h3>اختر بطلك</h3><button data-skin="0">Shadow 🔵</button><button data-skin="1">Phantom 🟣</button><button data-skin="2">Solar 🟡</button></div><div id="shop" style="display:none"><h3>🪙 متجر الأبطال</h3><p>اجمع العملات وافتح أبطالاً جدد</p></div></div></div>
 <div id="help">اسحب يمين ويسار للتبديل · اسحب للأعلى للقفز</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/ConvolutionShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
 <script>
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x050615);
-scene.fog=new THREE.Fog(0x050615,25,100);
+scene.fog=new THREE.Fog(0x050615,22,115);
 
 // SHADOWRUN_STARFIELD: نجوم سماء المدينة
 {
@@ -49,17 +57,45 @@ scene.fog=new THREE.Fog(0x050615,25,100);
 const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,150);
 camera.position.set(0,5.2,9);
 camera.lookAt(0,1,-5);
-const renderer=new THREE.WebGLRenderer({antialias:true});
+const renderer=new THREE.WebGLRenderer({
+ antialias:true,
+ powerPreference:'high-performance'
+});
 renderer.setSize(innerWidth,innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.15;
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
-scene.add(new THREE.HemisphereLight(0x9edfff,0x17102f,2));
-const light=new THREE.DirectionalLight(0xffffff,2.3);
-light.position.set(-4,10,5);light.castShadow=true;scene.add(light);
+
+const composer = new THREE.EffectComposer(renderer);
+composer.addPass(new THREE.RenderPass(scene, camera));
+const bloomPass = new THREE.UnrealBloomPass(
+ new THREE.Vector2(innerWidth, innerHeight),
+ 0.65, 0.35, 0.78
+);
+composer.addPass(bloomPass);
+
+
+scene.add(new THREE.HemisphereLight(0x9edfff,0x17102f,1.8));
+
+const light=new THREE.DirectionalLight(0xffffff,2.5);
+light.position.set(-4,12,5);
+light.castShadow=true;
+light.shadow.mapSize.set(1024,1024);
+light.shadow.camera.left=-18;
+light.shadow.camera.right=18;
+light.shadow.camera.top=22;
+light.shadow.camera.bottom=-12;
+light.shadow.camera.near=0.5;
+light.shadow.camera.far=45;
+light.shadow.bias=-0.00025;
+light.shadow.normalBias=0.025;
+scene.add(light);
 function mat(color,emissive=0x000000){
-return new THREE.MeshStandardMaterial({color,emissive,roughness:.48,metalness:.25});
+return new THREE.MeshStandardMaterial({color,emissive,roughness:.42,metalness:.28});
 }
 const roadmat=mat(0x171d32), cyan=mat(0x00cfff,0x003c77), pink=mat(0xff28b8,0x630044);
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(12,180),roadmat);
@@ -458,12 +494,13 @@ if(running && cop.visible){
   copArms[i].rotation.x=-Math.sin(now*.015+(i*Math.PI))*.3;
  }
 }
-renderer.render(scene,camera);
+composer.render();
 }
 requestAnimationFrame(animate);
 addEventListener('resize',()=>{
 camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
 renderer.setSize(innerWidth,innerHeight);
+composer.setSize(innerWidth,innerHeight);
 });
 </script>
 <script>document.addEventListener("DOMContentLoaded",()=>{document.getElementById("slideBtn").onclick=startSlide;
@@ -479,6 +516,8 @@ document.getElementById("openChars").onclick=()=>{document.getElementById("chars
 <div id="musicPanel">
 <h3>🎧 مشغّل الموسيقى</h3>
 <button onclick="pickMusic('iraqi')">🇮🇶 عراقي</button>
+<button onclick="pickMusic('hype')">🔥 عراقي حماسي</button>
+<button onclick="pickMusic('sad')">💔 عراقي حزين</button>
 <button onclick="pickMusic('foreign')">🌍 أجنبي</button>
 <div id="songList"></div>
 <p>ألصق رابط ملف صوت مباشر ينتهي غالباً بـ MP3 أو OGG:</p>
@@ -496,6 +535,10 @@ const playlistAudio = document.getElementById('gameAudio');
 
 const musicTracks = {
   iraqi: [
+    {name: 'الأغنية العراقية', path: 'music/iraqi/test-song.mp3'}
+  ],
+  hype: [],
+  sad: [
     {name: 'الأغنية العراقية', path: 'music/iraqi/test-song.mp3'}
   ],
   foreign: [
