@@ -158,17 +158,40 @@ function spawnObstacle(){
 const lane=Math.floor(Math.random()*3)-1;
 const g=new THREE.Group();
 const low=Math.random()<.5;
+
 if(low){
-box(g,1.85,.16,.9,mat(0xff315f,0x551020),0,1.35,0);
-box(g,1.95,.07,.96,pink,0,1.25,0);
-box(g,.12,.38,.12,mat(0x00d9ff,0x003344),-.78,1.12,0);
-box(g,.12,.38,.12,mat(0x00d9ff,0x003344),.78,1.12,0);
+// حاجز منخفض بإطار معدني وإضاءة نيون
+const metal=mat(0x252d3b,0x101722);
+const red=mat(0xff315f,0x551020);
+const cyan=mat(0x00d9ff,0x003344);
+
+box(g,1.8,.18,.72,metal,0,1.28,0);
+box(g,1.72,.1,.76,red,0,1.32,0);
+box(g,1.86,.045,.8,cyan,0,1.41,0);
+box(g,.12,.42,.14,metal,-.78,1.02,0);
+box(g,.12,.42,.14,metal,.78,1.02,0);
+box(g,.18,.06,.18,cyan,-.78,1.25,0);
+box(g,.18,.06,.18,cyan,.78,1.25,0);
 }else{
-box(g,1.15,.9,.8,mat(0x6c183b),0,.45,0);
-box(g,1.2,.09,.86,pink,0,.78,0);
+// حاجز طريق ثقيل مع قاعدة وتفاصيل تحذيرية
+const metal=mat(0x303846,0x151b25);
+const hazard=mat(0xffa51f,0x663300);
+const dark=mat(0x171b22);
+
+box(g,1.28,.82,.82,metal,0,.48,0);
+box(g,1.36,.12,.88,dark,0,.9,0);
+box(g,1.4,.09,.92,hazard,0,.98,0);
+box(g,1.05,.08,.86,pink,0,.7,0);
+box(g,.12,.22,.86,hazard,-.42,.43,.02);
+box(g,.12,.22,.86,hazard,.42,.43,.02);
+box(g,1.5,.12,1.02,dark,0,.08,0);
+box(g,.16,.12,.12,hazard,-.48,1.07,0);
+box(g,.16,.12,.12,hazard,.48,1.07,0);
 }
+
 g.position.set(lane*2,0,-65);
-scene.add(g);objects.push({g,lane,type:low?'low':'block'});
+scene.add(g);
+objects.push({g,lane,type:low?'low':'block'});
 }
 function spawnCoin(){
 const lane=Math.floor(Math.random()*3)-1;
