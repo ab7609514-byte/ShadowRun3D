@@ -494,6 +494,18 @@ let musicPlaylist = [];
 let musicIndex = -1;
 const playlistAudio = document.getElementById('gameAudio');
 
+const musicTracks = {
+  iraqi: [
+    {name: 'الأغنية العراقية', path: 'music/iraqi/test-song.mp3'}
+  ],
+  foreign: [
+    {name: 'الأغنية الأجنبية 1', path: 'music/foreign/foreign-song.mp3'},
+    {name: 'الأغنية الأجنبية 2', path: 'music/foreign/track-3.mp3'},
+    {name: 'الأغنية الأجنبية 3', path: 'music/foreign/track-4.mp3'},
+    {name: 'الأغنية الأجنبية 4', path: 'music/foreign/track-5.mp3'}
+  ]
+};
+
 playlistAudio.addEventListener('ended', async () => {
   if (!musicPlaylist.length || musicIndex < 0) return;
 
@@ -508,47 +520,60 @@ playlistAudio.addEventListener('ended', async () => {
   }
 });
 
-async function pickMusic(type){
- const list = document.getElementById('songList');
- list.innerHTML = '';
+function pickMusic(type) {
+  const list = document.getElementById('songList');
+  list.innerHTML = '';
+  const tracks = musicTracks[type] || [];
 
- const allTracks = [
-  {type:'iraqi', name:'🇮🇶 الأغنية العراقية', path:'music/iraqi/test-song.mp3'},
-  {type:'foreign', name:'🌍 الأغنية الأجنبية 1', path:'music/foreign/foreign-song.mp3'},
-  {type:'foreign', name:'🌍 الأغنية الأجنبية 2', path:'music/foreign/track-3.mp3'},
-  {type:'foreign', name:'🌍 الأغنية الأجنبية 3', path:'music/foreign/track-4.mp3'},
-  {type:'foreign', name:'🌍 الأغنية الأجنبية 4', path:'music/foreign/track-5.mp3'}
- ];
+  musicPlaylist = tracks.map(track => track.path);
+  musicIndex = -1;
 
- const heading = document.createElement('div');
- heading.textContent = '🎵 اختار الأغنية';
- heading.style.cssText = 'padding:12px;color:#00d9ff;font-weight:bold';
- list.appendChild(heading);
+  const heading = document.createElement('div');
+  heading.textContent = '🎵 اختار الأغنية';
+  heading.style.cssText = 'padding:12px;color:#00d9ff;font-weight:bold';
+  list.appendChild(heading);
 
- allTracks.filter(track => track.type === type).forEach(track => {
-  const btn = document.createElement('button');
-  btn.textContent = '▶ ' + track.name;
-  btn.style.cssText = 'display:block;width:100%;margin:7px 0;padding:12px;border-radius:10px;background:#00d9ff;color:#06101b;border:0;font-weight:bold';
+  tracks.forEach((track, index) => {
+    const btn = document.createElement('button');
+    btn.textContent = '▶ ' + track.name;
+    btn.style.cssText = 'display:block;width:100%;margin:7px 0;padding:12px;border-radius:10px;background:#00d9ff;color:#06101b;border:0;font-weight:bold';
 
-  btn.onclick = () => {
-   musicPlaylist = allTracks.map(item => item.path);
-   musicIndex = musicPlaylist.indexOf(track.path);
+    btn.onclick = async () => {
+      musicIndex = index;
+      playlistAudio.src = musicPlaylist[musicIndex];
+      playlistAudio.load();
 
-   const audio = document.getElementById('gameAudio');
-   audio.src = track.path;
-   audio.load();
-   audio.play().catch(() => alert('تعذر تشغيل الأغنية، تأكد من وجود الملف'));
-  };
+      try {
+        await playlistAudio.play();
+      } catch (e) {
+        alert('تعذر تشغيل الأغنية، تأكد من وجود الملف');
+      }
+    };
 
-  list.appendChild(btn);
- });
+    list.appendChild(btn);
+  });
 }
-function playDirect(){
- const url=document.getElementById('audioURL').value.trim();
- if(!url){alert('أدخل رابط ملف صوت مباشر أولاً');return;}
- const a=document.getElementById('gameAudio');a.src=url;a.play().catch(()=>alert('هذا الرابط مو ملف صوت مباشر أو ما يسمح بالتشغيل.'));
+
+function playDirect() {
+  const url = document.getElementById('audioURL').value.trim();
+  if (!url) {
+    alert('أدخل رابط ملف صوت مباشر أولاً');
+    return;
+  }
+
+  musicPlaylist = [];
+  musicIndex = -1;
+  playlistAudio.src = url;
+
+  playlistAudio.play().catch(() => {
+    alert('هذا الرابط مو ملف صوت مباشر أو ما يسمح بالتشغيل.');
+  });
 }
-function stopDirect(){const a=document.getElementById('gameAudio');a.pause();a.currentTime=0;}
+
+function stopDirect() {
+  playlistAudio.pause();
+  playlistAudio.currentTime = 0;
+}
 </script>
 
 
