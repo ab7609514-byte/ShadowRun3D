@@ -117,27 +117,64 @@ const neonPoles = [];
 
 const player=new THREE.Group();scene.add(player);
 function box(parent,w,h,d,material,x,y,z){
-const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);
-m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
+ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);
+ m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;
+ parent.add(m);return m;
 }
-const suit=mat(0x202e54), glow=mat(0x00eaff,0x0088ff), skin=mat(0xffc89d), dark=mat(0x10101b);
-box(player,.65,.78,.4,suit,0,1.05,0);
-box(player,.48,.48,.44,skin,0,1.72,0);
-box(player,.18,.12,.035,dark,-.12,1.76,.235);
-box(player,.18,.12,.035,dark,.12,1.76,.235);
-box(player,.10,.055,.025,glow,-.12,1.76,.258);
-box(player,.10,.055,.025,glow,.12,1.76,.258);
-box(player,.16,.12,.08,pink,0,1.25,.22);
-box(player,.51,.15,.47,dark,0,1.95,0);
-box(player,.52,.08,.49,glow,0,1.88,-.01);
-box(player,.12,.09,.04,glow,-.12,1.73,.23);
-box(player,.12,.09,.04,glow,.12,1.73,.23);
+function sphere(parent,rx,ry,rz,material,x,y,z){
+ const m=new THREE.Mesh(new THREE.SphereGeometry(1,20,16),material);
+ m.scale.set(rx,ry,rz);m.position.set(x,y,z);
+ m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
+}
+function limb(parent,a,b,r1,r2,material){
+ const start=new THREE.Vector3(...a),end=new THREE.Vector3(...b);
+ const dir=end.clone().sub(start);
+ const m=new THREE.Mesh(new THREE.CylinderGeometry(r2,r1,dir.length(),12),material);
+ m.position.copy(start).add(end).multiplyScalar(.5);
+ m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize());
+ m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
+}
+const suit=mat(0x202e54),glow=mat(0x00eaff,0x0088ff);
+const skin=mat(0xd99b78),dark=mat(0x10101b);
+const white=mat(0xe4f3ff),visor=mat(0x071526,0x003b58);
+const torso=new THREE.Group();player.add(torso);
+sphere(torso,.34,.43,.19,suit,0,1.18,0);
+sphere(torso,.36,.20,.20,suit,0,1.43,0);
+sphere(torso,.13,.13,.13,skin,0,1.62,0);
+sphere(torso,.235,.26,.22,skin,0,1.83,0);
+sphere(torso,.245,.16,.225,dark,0,1.94,0);
+sphere(torso,.205,.115,.025,visor,0,1.84,.205);
+box(torso,.13,.035,.025,glow,-.095,1.85,.23);
+box(torso,.13,.035,.025,glow,.095,1.85,.23);
+sphere(torso,.045,.055,.035,skin,-.238,1.82,0);
+sphere(torso,.045,.055,.035,skin,.238,1.82,0);
+sphere(torso,.19,.07,.18,glow,0,1.48,.02);
+box(torso,.28,.045,.21,dark,0,1.03,0);
+box(torso,.29,.035,.22,glow,0,1.07,.015);
+
 const legs=[];
-for(const x of [-.19,.19]){
-const leg=box(player,.21,.53,.25,dark,x,.4,0);legs.push(leg);
-box(player,.23,.12,.34,glow,x,.15,.04);
+const arms=[];
+for(const side of [-1,1]){
+ const hip=new THREE.Group();
+ hip.position.set(side*.17,.91,0);player.add(hip);
+ sphere(hip,.13,.14,.13,suit,0,-.02,0);
+ limb(hip,[0,-.02,0],[0,-.29,0],.105,.075,suit);
+ sphere(hip,.08,.085,.08,dark,0,-.30,0);
+ limb(hip,[0,-.30,0],[0,-.51,0],.07,.055,dark);
+ sphere(hip,.07,.055,.12,glow,0,-.50,.015);
+ sphere(hip,.105,.06,.18,dark,0,-.54,.065);
+ box(hip,.12,.025,.18,glow,0,-.535,.10);
+ legs.push(hip);
+
+ const arm=new THREE.Group();
+ arm.position.set(side*.34,1.42,0);player.add(arm);
+ sphere(arm,.13,.14,.13,suit,0,0,0);
+ limb(arm,[0,-.03,0],[side*.035,-.25,0],.09,.065,suit);
+ sphere(arm,.07,.07,.07,glow,side*.035,-.26,.015);
+ limb(arm,[side*.035,-.26,0],[side*.015,-.43,.015],.06,.045,dark);
+ sphere(arm,.065,.08,.06,skin,side*.015,-.46,.025);
+ arms.push(arm);
 }
-for(const x of [-.42,.42])box(player,.18,.62,.2,suit,x,1.08,0);
 player.position.z=0;
 const buildings=[];
 for(let i=0;i<48;i++){
@@ -262,6 +299,8 @@ player.position.y=jump;
 player.rotation.z=(lane*2-player.position.x)*-.025;
 legs[0].rotation.x=Math.sin(now*.015)*.6;
 legs[1].rotation.x=-Math.sin(now*.015)*.6;
+arms[0].rotation.x=-Math.sin(now*.015)*.38;
+arms[1].rotation.x=Math.sin(now*.015)*.38;
 for(const b of buildings){b.position.z+=speed*dt;if(b.position.z>10)b.position.z-=192}
 for(const p of neonPoles){p.position.z+=speed*dt;if(p.position.z>10)p.position.z-=162}
 for(let i=objects.length-1;i>=0;i--){
