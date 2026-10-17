@@ -157,10 +157,16 @@ const objects=[];
 function spawnObstacle(){
 const lane=Math.floor(Math.random()*3)-1;
 const g=new THREE.Group();
-const base=box(g,1.15,.9,.8,mat(0x6c183b),0,.45,0);
+const low=Math.random()<.5;
+if(low){
+box(g,1.35,.18,.85,mat(0xff315f),0,1.45,0);
+box(g,1.45,.08,.9,pink,0,1.34,0);
+}else{
+box(g,1.15,.9,.8,mat(0x6c183b),0,.45,0);
 box(g,1.2,.09,.86,pink,0,.78,0);
+}
 g.position.set(lane*2,0,-65);
-scene.add(g);objects.push({g,lane,type:'block'});
+scene.add(g);objects.push({g,lane,type:low?'low':'block'});
 }
 function spawnCoin(){
 const lane=Math.floor(Math.random()*3)-1;
@@ -238,7 +244,9 @@ const o=objects[i];o.g.position.z+=speed*dt;
 if(o.type==='coin')o.g.rotation.y+=dt*4;
 if(Math.abs(o.g.position.z)<.85&&Math.abs(o.g.position.x-player.position.x)<1){
 if(o.type==='coin'){gold++;goldEl.textContent=gold;scene.remove(o.g);objects.splice(i,1);continue}
-if(jump<.8){endGame();break}
+if(o.type==='low'){
+if(!sliding){endGame();break}
+}else if(jump<.8){endGame();break}
 }
 if(o.g.position.z>7){scene.remove(o.g);objects.splice(i,1)}
 }
